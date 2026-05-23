@@ -3,4 +3,6 @@ node_modules/
 *.class
 bin/
 *.log
-node_modules
+package-lock.json
+.vscode/
+.idea/
