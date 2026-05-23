@@ -4,4 +4,3 @@ node_modules/
 bin/
 *.log
 node_modules
-node_modules
