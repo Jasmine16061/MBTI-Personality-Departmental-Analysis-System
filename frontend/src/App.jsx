@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Users, BarChart3, Network, UserPlus, CheckCircle2, XCircle, Trash2, Mail, Hash, BookOpen } from 'lucide-react';
+import { Users, BarChart3, Network, UserPlus, CheckCircle2, XCircle, Trash2, Hash, BookOpen } from 'lucide-react';
+// 引入 Recharts 圖表套件
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -20,7 +22,7 @@ const MBTI_TYPES = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('stats'); // 為了方便你預覽，我預設先切換到 stats 頁籤
   const [notification, setNotification] = useState(null);
 
   // Shared notification function
@@ -120,7 +122,7 @@ export default function App() {
 }
 
 /* =========================================================
-   Component 1: Profile Management
+   Component 1: Profile Management (保持不變)
    ========================================================= */
 function ProfileManagement({ showNotification }) {
   const [students, setStudents] = useState([]);
@@ -274,7 +276,7 @@ function ProfileManagement({ showNotification }) {
 }
 
 /* =========================================================
-   Component 2: Stats Dashboard
+   Component 2: Stats Dashboard (全新升級版 - Recharts 圖表)
    ========================================================= */
 function StatsDashboard({ showNotification }) {
   const [stats, setStats] = useState([]);
@@ -287,8 +289,10 @@ function StatsDashboard({ showNotification }) {
         const res = await fetch(`${API_BASE_URL}/stats/mbti`);
         if (!res.ok) throw new Error('Failed to fetch statistics');
         const data = await res.json();
+        
+        // 為了符合 Recharts 的資料格式，將回傳資料重新映射
         const formattedData = data.map(item => ({
-          ...item,
+          name: item.MBTI_Code,
           Total: parseInt(item.Total, 10)
         })).sort((a, b) => b.Total - a.Total); 
         
@@ -300,48 +304,96 @@ function StatsDashboard({ showNotification }) {
       }
     };
     fetchStats();
-  }, []);
+  }, [showNotification]);
 
-  const maxTotal = stats.length > 0 ? Math.max(...stats.map(s => s.Total)) : 1;
+  // 為圓餅圖設定專屬配色 (搭配專案主題色)
+  const COLORS = ['#99000F', '#1F2937', '#DC2626', '#4B5563', '#EF4444', '#6B7280', '#F87171', '#9CA3AF'];
+
+  // 自訂圖表提示框
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border-2 border-[#99000F] shadow-lg">
+          <p className="font-bold text-black uppercase">{`${payload[0].name || label}`}</p>
+          <p className="text-[#99000F] font-bold">{`Count: ${payload[0].value} student(s)`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="bg-white p-6 border-2 border-[#99000F] min-h-[500px]">
       <h2 className="text-xl font-bold text-black mb-8 flex items-center uppercase border-b-2 border-[#99000F] pb-2 inline-flex">
         <BarChart3 className="w-6 h-6 mr-2 text-[#99000F]" />
-        MBTI Population Distribution
+        MBTI Population Analysis
       </h2>
 
       {loading ? (
-        <div className="text-center py-12 font-bold text-black uppercase">Calculating...</div>
+        <div className="text-center py-12 font-bold text-black uppercase animate-pulse">Loading Chart Data...</div>
       ) : stats.length === 0 ? (
-        <div className="text-center py-12 font-bold text-black">Not enough data to generate chart</div>
+        <div className="text-center py-12 font-bold text-black">Not enough data to generate charts. Please add students first.</div>
       ) : (
-        <div className="space-y-5 max-w-3xl mx-auto mt-8">
-          {stats.map((stat) => (
-            <div key={stat.MBTI_Code} className="flex items-center group">
-              <div className="w-16 font-bold text-black text-right mr-4 group-hover:underline">{stat.MBTI_Code}</div>
-              <div className="flex-1 bg-white border-2 border-[#99000F] h-8 flex items-center relative">
-                <div 
-                  className="bg-[#99000F] h-full transition-all duration-1000 ease-out border-r-2 border-[#99000F]"
-                  style={{ width: `${(stat.Total / maxTotal) * 100}%` }}
-                ></div>
-              </div>
-              <div className="w-20 text-left ml-4 font-bold text-black">{stat.Total} User(s)</div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+          
+          {/* 長條圖 (Bar Chart) */}
+          <div className="flex flex-col items-center">
+            <h3 className="font-bold text-black uppercase mb-4 tracking-widest border-b border-[#99000F] pb-1">Type Distribution (Bar)</h3>
+            <div className="w-full h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                  <XAxis dataKey="name" tick={{ fill: 'black', fontWeight: 'bold' }} axisLine={{ stroke: '#000' }} />
+                  <YAxis allowDecimals={false} tick={{ fill: 'black', fontWeight: 'bold' }} axisLine={{ stroke: '#000' }} />
+                  <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f3f4f6' }} />
+                  <Bar dataKey="Total" fill="#99000F" radius={[4, 4, 0, 0]} animationDuration={1500} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          ))}
+          </div>
+
+          {/* 圓餅圖 (Pie Chart) */}
+          <div className="flex flex-col items-center">
+            <h3 className="font-bold text-black uppercase mb-4 tracking-widest border-b border-[#99000F] pb-1">Percentage Breakdown (Pie)</h3>
+            <div className="w-full h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={stats}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={110}
+                    fill="#8884d8"
+                    dataKey="Total"
+                    animationDuration={1500}
+                  >
+                    {stats.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
         </div>
       )}
       
-      <div className="mt-16 p-4 bg-white border-2 border-[#99000F] text-sm text-black font-bold flex items-start">
+      <div className="mt-12 p-4 bg-gray-50 border-l-4 border-l-[#99000F] border-y-2 border-r-2 border-y-[#99000F] border-r-[#99000F] text-sm text-black font-bold flex items-start">
         <span className="text-xl mr-3 text-[#99000F]">INFO</span>
-        <p className="pt-1">This chart displays the real-time distribution of MBTI types from the database. Add new records in the Profile Management tab to see updates.</p>
+        <p className="pt-1">
+          This advanced dashboard addresses Requirement UC-02. It visualizes the real-time distribution of MBTI personality traits from the SQL database using Recharts.
+        </p>
       </div>
     </div>
   );
 }
 
 /* =========================================================
-   Component 3: Team Matching
+   Component 3: Team Matching (保持不變)
    ========================================================= */
 function TeamMatching({ showNotification }) {
   const [matchData, setMatchData] = useState({
