@@ -151,6 +151,33 @@ INSERT INTO `Project` (`ProjectID`, `Title`, `Description`, `Status`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `Project_Group`
+--
+
+CREATE TABLE `Project_Group` (
+  `GroupID` int(11) NOT NULL AUTO_INCREMENT,
+  `ProjectID` int(11) NOT NULL,
+  `GroupName` varchar(100) NOT NULL,
+  PRIMARY KEY (`GroupID`),
+  KEY `ProjectID` (`ProjectID`),
+  CONSTRAINT `project_group_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `Project_Group`
+--
+
+INSERT INTO `Project_Group` (`GroupID`, `ProjectID`, `GroupName`) VALUES
+(1, 1, 'Group A'),
+(2, 2, 'Group A'),
+(3, 3, 'Group A'),
+(4, 4, 'Group A'),
+(5, 5, 'Group A'),
+(6, 6, 'Group A');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `Project_Department`
 --
 
@@ -249,22 +276,29 @@ INSERT INTO `Student` (`StudentID`, `Name`, `DeptID`, `MBTI_Code`, `EnrollmentYe
 CREATE TABLE `Team_Matching` (
   `ProjectID` int(11) NOT NULL,
   `StudentID` varchar(20) NOT NULL,
-  `Match_Status` varchar(20) DEFAULT 'Pending'
+  `GroupID` int(11) DEFAULT NULL,
+  `Match_Status` varchar(20) DEFAULT 'Pending',
+  PRIMARY KEY (`ProjectID`,`StudentID`),
+  KEY `StudentID` (`StudentID`),
+  KEY `GroupID` (`GroupID`),
+  CONSTRAINT `team_matching_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE,
+  CONSTRAINT `team_matching_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE,
+  CONSTRAINT `team_matching_ibfk_3` FOREIGN KEY (`GroupID`) REFERENCES `Project_Group` (`GroupID`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `Team_Matching`
 --
 
-INSERT INTO `Team_Matching` (`ProjectID`, `StudentID`, `Match_Status`) VALUES
-(1, 'D1102031', 'Matched'),
-(1, 'D1102115', 'Pending'),
-(1, 'D1102144', 'Pending'),
-(2, 'D1102045', 'Matched'),
-(3, 'D1102089', 'Matched'),
-(4, 'D1102144', 'Pending'),
-(5, 'D1102277', 'Matched'),
-(6, 'D1102159', 'Pending');
+INSERT INTO `Team_Matching` (`ProjectID`, `StudentID`, `GroupID`, `Match_Status`) VALUES
+(1, 'D1102031', 1, 'Matched'),
+(1, 'D1102115', 1, 'Pending'),
+(1, 'D1102144', 1, 'Pending'),
+(2, 'D1102045', 2, 'Matched'),
+(3, 'D1102089', 3, 'Matched'),
+(4, 'D1102144', 4, 'Pending'),
+(5, 'D1102277', 5, 'Matched'),
+(6, 'D1102159', 6, 'Pending');
 
 --
 -- Indexes for dumped tables
@@ -328,13 +362,6 @@ ALTER TABLE `Student`
   ADD KEY `MBTI_Code` (`MBTI_Code`);
 
 --
--- Indexes for table `Team_Matching`
---
-ALTER TABLE `Team_Matching`
-  ADD PRIMARY KEY (`ProjectID`,`StudentID`),
-  ADD KEY `StudentID` (`StudentID`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -382,12 +409,6 @@ ALTER TABLE `Student`
   ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`DeptID`) REFERENCES `Department` (`DeptID`),
   ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`MBTI_Code`) REFERENCES `MBTI_Type` (`MBTI_Code`);
 
---
--- Constraints for table `Team_Matching`
---
-ALTER TABLE `Team_Matching`
-  ADD CONSTRAINT `team_matching_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`),
-  ADD CONSTRAINT `team_matching_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
