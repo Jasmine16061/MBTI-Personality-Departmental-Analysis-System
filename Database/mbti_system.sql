@@ -173,7 +173,19 @@ INSERT INTO `Project_Group` (`GroupID`, `ProjectID`, `GroupName`) VALUES
 (3, 3, 'Group A'),
 (4, 4, 'Group A'),
 (5, 5, 'Group A'),
-(6, 6, 'Group A');
+(6, 6, 'Group A'),
+(7, 1, 'Group B (ByteForce)'),
+(8, 1, 'Group C (DataPirates)'),
+(9, 2, 'Group B (PixelPerfect)'),
+(10, 2, 'Group C (CodeWizards)'),
+(11, 3, 'Group B (SecOps)'),
+(12, 3, 'Group C (NetGuard)'),
+(13, 4, 'Group B (EtherNodes)'),
+(14, 4, 'Group C (ChainReact)'),
+(15, 5, 'Group B (SentryOps)'),
+(16, 5, 'Group C (CloudShield)'),
+(17, 6, 'Group B (ShopSync)'),
+(18, 6, 'Group C (CartVanguard)');
 
 -- --------------------------------------------------------
 
@@ -265,7 +277,17 @@ INSERT INTO `Student` (`StudentID`, `Name`, `DeptID`, `MBTI_Code`, `EnrollmentYe
 ('D1102277', 'Oliver Queen', 3, 'ISTP', 2023, 'oliver@example.com', 'password123', 1),
 ('D1102311', 'Emma Stone', 4, 'INFP', 2025, 'emmas@example.com', 'password123', 1),
 ('D1102345', 'Bruce Wayne', 3, 'INTJ', 2023, 'bruce@example.com', 'password123', 1),
-('D1102400', 'Diana Prince', 4, 'INFJ', 2025, 'diana@example.com', 'password123', 1);
+('D1102400', 'Diana Prince', 4, 'INFJ', 2025, 'diana@example.com', 'password123', 1),
+('D1102450', 'Tony Stark', 1, 'ENTP', 2024, 'tony@example.com', 'password123', 1),
+('D1102462', 'Peter Parker', 4, 'INFP', 2025, 'peter@example.com', 'password123', 1),
+('D1102488', 'Clark Kent', 2, 'INFJ', 2024, 'clark@example.com', 'password123', 1),
+('D1102500', 'Barry Allen', 1, 'ESTP', 2024, 'barry@example.com', 'password123', 1),
+('D1102512', 'Natasha Romanoff', 3, 'ISTP', 2023, 'natasha@example.com', 'password123', 1),
+('D1102530', 'Steve Rogers', 4, 'ISFJ', 2025, 'steve@example.com', 'password123', 1),
+('D1102545', 'Wanda Maximoff', 2, 'INFP', 2024, 'wanda@example.com', 'password123', 0),
+('D1102560', 'Stephen Strange', 1, 'INTJ', 2024, 'strange@example.com', 'password123', 1),
+('D1102580', 'Carol Danvers', 3, 'ESTJ', 2023, 'carol@example.com', 'password123', 1),
+('D1102599', 'Thor Odinson', 2, 'ESTP', 2024, 'thor@example.com', 'password123', 1);
 
 -- --------------------------------------------------------
 
@@ -298,7 +320,35 @@ INSERT INTO `Team_Matching` (`ProjectID`, `StudentID`, `GroupID`, `Match_Status`
 (3, 'D1102089', 3, 'Matched'),
 (4, 'D1102144', 4, 'Pending'),
 (5, 'D1102277', 5, 'Matched'),
-(6, 'D1102159', 6, 'Pending');
+(6, 'D1102159', 6, 'Pending'),
+(1, 'D1102450', 7, 'Matched'),
+(1, 'D1102500', 7, 'Matched'),
+(1, 'D1102560', 7, 'Pending'),
+(2, 'D1102488', 9, 'Matched'),
+(2, 'D1102599', 9, 'Matched'),
+(2, 'D1102462', 9, 'Pending'),
+(3, 'D1102512', 11, 'Matched'),
+(3, 'D1102580', 11, 'Matched'),
+(4, 'D1102530', 13, 'Matched'),
+(6, 'D1102545', 17, 'Matched');
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Notification`
+--
+
+CREATE TABLE `Notification` (
+  `NotificationID` int(11) NOT NULL AUTO_INCREMENT,
+  `StudentID` varchar(20) NOT NULL,
+  `Message` varchar(255) NOT NULL,
+  `Is_Read` tinyint(1) DEFAULT 0,
+  `Created_At` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`NotificationID`),
+  KEY `StudentID` (`StudentID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Indexes for dumped tables
@@ -408,6 +458,10 @@ ALTER TABLE `Project_MBTI`
 ALTER TABLE `Student`
   ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`DeptID`) REFERENCES `Department` (`DeptID`),
   ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`MBTI_Code`) REFERENCES `MBTI_Type` (`MBTI_Code`);
+
+
+ALTER TABLE `Notification`
+  ADD CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE;
 
 COMMIT;
 

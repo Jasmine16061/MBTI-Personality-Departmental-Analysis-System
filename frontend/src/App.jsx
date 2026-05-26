@@ -40,6 +40,56 @@ export default function App() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [loginInput, setLoginInput] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [notificationsData, setNotificationsData] = useState({ invitations: [], requests: [], systemNotifications: [] });
+  const [isNotificationsDismissed, setIsNotificationsDismissed] = useState(false);
+
+  const checkNotifications = async (studentId) => {
+    if (!studentId || studentId === 'admin' || studentId === 'professor') return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/students/${studentId}/notifications`);
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      setNotificationsData(prev => {
+        // If a new invitation, request, or system notification is added, automatically show the banner again!
+        const hasNew = data.invitations.length > (prev.invitations?.length || 0) || 
+                      data.requests.length > (prev.requests?.length || 0) ||
+                      (data.systemNotifications?.length || 0) > (prev.systemNotifications?.length || 0);
+        if (hasNew) {
+          setIsNotificationsDismissed(false);
+        }
+        return data;
+      });
+    } catch (err) {
+      console.error('Failed to fetch notifications', err);
+    }
+  };
+
+  const handleDismissNotifications = async () => {
+    setIsNotificationsDismissed(true);
+    if (currentUserId && userRole === 'student') {
+      try {
+        await fetch(`${API_BASE_URL}/students/${currentUserId}/notifications/read`, { method: 'POST' });
+        // Instantly refresh notification state to clear system notifications
+        checkNotifications(currentUserId);
+      } catch (err) {
+        console.error('Failed to dismiss notifications', err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (currentUserId && userRole === 'student') {
+      checkNotifications(currentUserId);
+      const interval = setInterval(() => {
+        checkNotifications(currentUserId);
+      }, 10000); // Poll every 10 seconds
+      return () => clearInterval(interval);
+    } else {
+      setNotificationsData({ invitations: [], requests: [], systemNotifications: [] });
+      setIsNotificationsDismissed(false); // Reset dismissed state on logout
+    }
+  }, [currentUserId, userRole]);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -206,6 +256,78 @@ export default function App() {
                   </li>
                   )}
                 </ul>
+            )}
+
+            {/* Compact Real-time Matching Notifications Center */}
+            {userRole === 'student' && !isNotificationsDismissed && 
+             (notificationsData.invitations.length > 0 || 
+              notificationsData.requests.length > 0 || 
+              (notificationsData.systemNotifications && notificationsData.systemNotifications.length > 0)) && (
+              <div className="p-4 border-t-2 border-black bg-amber-50 relative animate-in fade-in duration-300">
+                {/* Dismiss Button */}
+                <button 
+                  onClick={handleDismissNotifications} 
+                  className="absolute top-2 right-2 text-black hover:text-red-700 hover:scale-110 active:scale-95 transition-transform"
+                  title="Clear Notifications"
+                >
+                  <X className="w-3.5 h-3.5 stroke-[3]" />
+                </button>
+
+                <div className="flex items-center gap-2 mb-3 pr-4">
+                  <div className="w-2.5 h-2.5 bg-red-600 border border-black rounded-full animate-ping shrink-0" />
+                  <span className="text-[11px] font-black uppercase tracking-wider text-black">
+                    Matching Alerts
+                  </span>
+                </div>
+
+                {/* 1. Invitations Sent to Me */}
+                {notificationsData.invitations.map((inv, idx) => (
+                  <div key={`inv-${idx}`} className="bg-white p-2.5 border border-black text-[10px] mb-2 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                    <p className="font-bold text-slate-800 leading-snug">
+                      Invited to join <span className="text-[#99000F]">"{inv.GroupName}"</span> for project "{inv.ProjectName}".
+                    </p>
+                    <button 
+                      onClick={() => {
+                        setActiveTab('matching');
+                        showNotification(`Please select project "${inv.ProjectName}" in the matching panel to review and accept!`, 'success');
+                      }}
+                      className="mt-1.5 w-full bg-black text-white hover:bg-[#99000F] font-bold py-1 text-[10px] uppercase border border-black tracking-wide transition-all active:scale-95"
+                    >
+                      Review
+                    </button>
+                  </div>
+                ))}
+
+                {/* 2. Requests sent to my Group (if I am Leader) */}
+                {notificationsData.requests.map((req, idx) => (
+                  <div key={`req-${idx}`} className="bg-white p-2.5 border border-black text-[10px] mb-2 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                    <p className="font-bold text-slate-800 leading-snug">
+                      <span className="text-black font-extrabold">{req.Name}</span> applied to join your group <span className="text-[#99000F]">"{req.GroupName}"</span> for project "{req.ProjectName}".
+                    </p>
+                    <button 
+                      onClick={() => {
+                        setActiveTab('matching');
+                        showNotification(`Please select project "${req.ProjectName}" in the matching panel to approve/reject!`, 'success');
+                      }}
+                      className="mt-1.5 w-full bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-1 text-[10px] uppercase border border-black tracking-wide transition-all active:scale-95"
+                    >
+                      Review
+                    </button>
+                  </div>
+                ))}
+
+                {/* 3. System Alerts (Approvals, Rejections, Kicks) */}
+                {notificationsData.systemNotifications && notificationsData.systemNotifications.map((sys, idx) => (
+                  <div key={`sys-${idx}`} className="bg-white p-2.5 border border-black text-[10px] mb-2 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] bg-sky-50/20 border-sky-900/50">
+                    <p className="font-medium text-sky-950 leading-snug">
+                      {sys.Message}
+                    </p>
+                    <p className="text-[8px] text-slate-400 font-mono mt-1 text-right">
+                      {new Date(sys.Created_At).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </aside>
@@ -829,10 +951,17 @@ function TeamMatching({ userRole, currentUserId, showNotification }) {
   const hasControlPower = isAdmin || isProfessor;
 
   useEffect(() => {
-      fetch(`${API_BASE_URL}/projects`)
-          .then(res => res.json())
-          .then(data => setProjects(data))
-          .catch(() => showNotification('Failed to fetch projects', 'error'));
+    fetch(`${API_BASE_URL}/projects`)
+        .then(res => res.json())
+        .then(data => {
+            // Since backend returns pure array directly, set data straight into state
+            if (Array.isArray(data)) {
+                setProjects(data);
+            } else if (data && Array.isArray(data.data)) {
+                setProjects(data.data);
+            }
+        })
+        .catch(() => showNotification('Failed to fetch projects', 'error'));
   }, []);
 
   const fetchProjectDetails = async (project) => {
@@ -1009,10 +1138,10 @@ function TeamMatching({ userRole, currentUserId, showNotification }) {
           defaultValue=""
         >
           <option value="" disabled>-- Select a Project to Analyze --</option>
-          {projects.map(p => (
+          {projects?.map(p => (
             <option key={p.ProjectID} value={p.ProjectID}>{p.ProjectName} (ID: {p.ProjectID})</option>
           ))}
-        </select>
+</select>
       </div>
 
       {selectedProject && (
@@ -1041,36 +1170,43 @@ function TeamMatching({ userRole, currentUserId, showNotification }) {
             
             {loading ? (
               <p className="text-center py-8 font-bold animate-pulse text-[#99000F]">Running Match Logic...</p>
-            ) : myPendingGroup && !hasControlPower ? (
-              <p className="text-center py-8 text-amber-800 bg-amber-100 border-2 border-amber-400 font-bold p-4 text-sm animate-pulse shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                You have an active request or invitation. Please respond to it on the right panel first!
-              </p>
-            ) : !myGroup && !hasControlPower ? (
-              <p className="text-center py-8 text-amber-700 bg-amber-50 border border-amber-200 font-semibold p-3 text-sm">
-                Please establish or join an active group on the right to start inviting team candidates.
-              </p>
-            ) : displayList.length === 0 ? (
-              <p className="text-center py-8 text-slate-500 font-semibold border-2 border-dashed border-slate-300">
-                {candidateTab === 'recommended' ? 'No matching candidates found based on strict requirements.' : 'No available public candidates left to invite.'}
-              </p>
             ) : (
-              <ul className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                {displayList.map(student => (
-                  <li key={student.StudentID} className={`flex flex-col sm:flex-row justify-between items-start sm:items-center border border-black p-3 ${candidateTab === 'recommended' ? 'bg-amber-50/30' : 'bg-slate-50/50'}`}>
-                    <div>
-                      <p className="font-bold text-black">{student.Name} ({student.StudentID})</p>
-                      <div className="flex gap-2 mt-1">
-                        <span className="text-xs font-bold bg-white border border-black px-1.5 py-0.5">{DEPARTMENTS[student.DeptID]}</span>
-                        <span className="text-xs font-bold bg-[#99000F]/10 text-[#99000F] border border-[#99000F] px-1.5 py-0.5">{student.MBTI_Code}</span>
-                        {Number(student.Is_Searchable) === 0 && <span className="text-[10px] font-bold bg-gray-200 border border-gray-400 px-1 text-gray-700">Private Profile</span>}
-                      </div>
-                    </div>
-                    <button onClick={() => handleInviteToMyGroup(student)} className="mt-3 sm:mt-0 bg-black text-white font-bold py-1.5 px-3 border-2 border-black hover:bg-white hover:text-black transition-colors text-xs uppercase shrink-0">
-                      Invite to My Group
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <>
+                {myPendingGroup && !hasControlPower && (
+                  <p className="mb-4 text-amber-800 bg-amber-100 border-2 border-amber-400 font-bold p-3 text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    💡 Note: You have a pending request or invite. Please respond to it on the right panel!
+                  </p>
+                )}
+                {!myGroup && !hasControlPower && (
+                  <p className="mb-4 text-amber-700 bg-amber-50 border border-amber-200 font-semibold p-2.5 text-xs">
+                    💡 Tip: Establish or join an active group on the right to start inviting team candidates.
+                  </p>
+                )}
+
+                {displayList.length === 0 ? (
+                  <p className="text-center py-8 text-slate-500 font-semibold border-2 border-dashed border-slate-300">
+                    {candidateTab === 'recommended' ? 'No matching candidates found based on strict requirements.' : 'No available public candidates left to invite.'}
+                  </p>
+                ) : (
+                  <ul className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                    {displayList.map(student => (
+                      <li key={student.StudentID} className={`flex flex-col sm:flex-row justify-between items-start sm:items-center border border-black p-3 ${candidateTab === 'recommended' ? 'bg-amber-50/30' : 'bg-slate-50/50'}`}>
+                        <div>
+                          <p className="font-bold text-black">{student.Name} ({student.StudentID})</p>
+                          <div className="flex gap-2 mt-1">
+                            <span className="text-xs font-bold bg-white border border-black px-1.5 py-0.5">{DEPARTMENTS[student.DeptID]}</span>
+                            <span className="text-xs font-bold bg-[#99000F]/10 text-[#99000F] border border-[#99000F] px-1.5 py-0.5">{student.MBTI_Code}</span>
+                            {Number(student.Is_Searchable) === 0 && <span className="text-[10px] font-bold bg-gray-200 border border-gray-400 px-1 text-gray-700">Private Profile</span>}
+                          </div>
+                        </div>
+                        <button onClick={() => handleInviteToMyGroup(student)} className="mt-3 sm:mt-0 bg-black text-white font-bold py-1.5 px-3 border-2 border-black hover:bg-white hover:text-black transition-colors text-xs uppercase shrink-0">
+                          Invite to My Group
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
             )}
           </div>
 
@@ -1452,7 +1588,13 @@ function AcademicGuidance({ showNotification, userRole }) {
 
     fetch(`${API_BASE_URL}/projects`)
       .then(res => res.json())
-      .then(data => setAllProjects(data))
+      .then(data => {
+          if (Array.isArray(data)) {
+              setAllProjects(data);
+          } else if (data && Array.isArray(data.data)) {
+              setAllProjects(data.data);
+          }
+      })
       .catch(() => showNotification('Failed to fetch projects', 'error'));
 
     fetch(`${API_BASE_URL}/students`)
