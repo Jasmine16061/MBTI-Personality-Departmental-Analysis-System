@@ -1,4 +1,5 @@
 .DS_Store
+<<<<<<< HEAD
 **/node_modules/
 *.class
 bin/
@@ -6,3 +7,12 @@ bin/
 .vscode/
 .idea/
 .env
+=======
+node_modules/
+*.class
+bin/
+*.log
+package-lock.json
+.vscode/
+.idea/
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd

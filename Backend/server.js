@@ -9,19 +9,28 @@ app.use(express.json());
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
+<<<<<<< HEAD
     password: '0719',      
+=======
+    password: '',      
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
     database: 'mbti_system'
 });
 
 // READ API: Get student list
 app.get("/api/students", (req, res) => {
+<<<<<<< HEAD
     const sql = "SELECT * FROM Student ORDER BY DeptID ASC, StudentID ASC";
+=======
+    const sql = "SELECT * FROM Student";
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results); 
     });
 });
 
+<<<<<<< HEAD
 // NEW LOGIN API (Authentication Workflow)
 app.post("/api/login", (req, res) => {
     const { username, password } = req.body;
@@ -66,12 +75,23 @@ app.post("/api/students", (req, res) => {
     const sql = "INSERT INTO Student (StudentID, Name, DeptID, MBTI_Code, Email, Is_Searchable, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
     db.query(sql, [StudentID, Name, DeptID, MBTI_Code, Email, isSearchableVal, userPassword], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
+=======
+// INSERT: Create Student Profile
+app.post("/api/students", (req, res) => {
+    const { StudentID, Name, DeptID, MBTI_Code, Email, isSearchable } = req.body;
+    const isSearchableVal = isSearchable !== undefined ? isSearchable : 1; 
+    
+    const sql = "INSERT INTO Student (StudentID, Name, DeptID, MBTI_Code, Email, Is_Searchable) VALUES (?, ?, ?, ?, ?, ?)";
+    db.query(sql, [StudentID, Name, DeptID, MBTI_Code, Email, isSearchableVal], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
         res.json({ message: "Student record created successfully!" });
     });
 });
 
 // PUT: Update Student Profile & Privacy
 app.put("/api/students/:id", (req, res) => {
+<<<<<<< HEAD
     const { Name, DeptID, MBTI_Code, Email, isSearchable, password } = req.body;
     let sql, params;
     if (password) {
@@ -84,6 +104,12 @@ app.put("/api/students/:id", (req, res) => {
 
     db.query(sql, params, (err, result) => {
     if (err) return res.status(500).json({ error: "Failed to update profile" });
+=======
+    const { Name, DeptID, MBTI_Code, Email, isSearchable } = req.body;
+    const sql = "UPDATE Student SET Name=?, DeptID=?, MBTI_Code=?, Email=?, Is_Searchable=? WHERE StudentID=?";
+    db.query(sql, [Name, DeptID, MBTI_Code, Email, isSearchable, req.params.id], (err, result) => {
+        if (err) return res.status(500).json({ error: "Failed to update profile" });
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
         res.json({ message: "Profile updated successfully!" });
     });
 });
@@ -135,13 +161,21 @@ app.post("/api/feedback", (req, res) => {
 });
 
 // ==========================================
+<<<<<<< HEAD
 // GROUP & MATCHING APIs (Updated with Group Logic)
+=======
+// NEW MATCHING APIs (Fixed for Issues 5 & 6)
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
 // ==========================================
 
 // 取得所有專案以及其需求
 app.get("/api/projects", (req, res) => {
     const sql = `
+<<<<<<< HEAD
         SELECT p.ProjectID, p.Title as ProjectName, p.Description, p.Status, p.CourseID,
+=======
+        SELECT p.ProjectID, p.Title as ProjectName, p.Description, p.Status,
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
                GROUP_CONCAT(DISTINCT pd.DeptID) as reqDepts,
                GROUP_CONCAT(DISTINCT pm.MBTI_Code) as prefMBTI
         FROM Project p
@@ -160,6 +194,7 @@ app.get("/api/projects", (req, res) => {
     });
 });
 
+<<<<<<< HEAD
 // 取得特定專案底下的所有群組與組員
 app.get("/api/projects/:id/groups", (req, res) => {
     const sql = `
@@ -254,6 +289,14 @@ app.get("/api/projects/:id/members", (req, res) => {
         FROM Team_Matching tm
         JOIN Student s ON tm.StudentID = s.StudentID
         LEFT JOIN Project_Group pg ON tm.GroupID = pg.GroupID
+=======
+// 取得特定專案的現有組員與狀態
+app.get("/api/projects/:id/members", (req, res) => {
+    const sql = `
+        SELECT s.*, tm.Match_Status
+        FROM Team_Matching tm
+        JOIN Student s ON tm.StudentID = s.StudentID
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
         WHERE tm.ProjectID = ?
     `;
     db.query(sql, [req.params.id], (err, results) => {
@@ -262,6 +305,7 @@ app.get("/api/projects/:id/members", (req, res) => {
     });
 });
 
+<<<<<<< HEAD
 // 發送邀請 / 申請加入特定小組 (Pending)
 app.post("/api/matching/invite", (req, res) => {
     const { projectId, studentId, groupId } = req.body;
@@ -282,12 +326,30 @@ app.post("/api/matching/invite", (req, res) => {
             if (err2) return res.status(500).json({ error: "Invite failed" });
             res.json({ message: "Group request / Invite pending successfully." });
         });
+=======
+// 發送邀請 (INSERT)
+app.post("/api/matching/invite", (req, res) => {
+    const { projectId, studentId } = req.body;
+    const sql = "INSERT INTO Team_Matching (ProjectID, StudentID, Match_Status) VALUES (?, ?, 'Pending')";
+    db.query(sql, [projectId, studentId], (err, result) => {
+        if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({ error: "Student is already in this project or invited." });
+            }
+            return res.status(500).json({ error: "Invite failed" });
+        }
+        res.json({ message: "Invited successfully" });
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
     });
 });
 
 // 更新狀態 (Approve/Reject)
 app.put("/api/matching", (req, res) => {
     const { status, projectId, studentId } = req.body;
+<<<<<<< HEAD
+=======
+    // 如果 Reject，建議直接刪除該筆紀錄以維持資料庫整潔，或者 UPDATE 為 Rejected
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
     if (status === 'Rejected') {
         const delSql = "DELETE FROM Team_Matching WHERE ProjectID = ? AND StudentID = ?";
         db.query(delSql, [projectId, studentId], (err) => {
@@ -303,12 +365,17 @@ app.put("/api/matching", (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 // 離開專案 / 踢出成員 (DELETE) ＋ 自動清理空群組
+=======
+// 離開專案 / 踢出成員 (DELETE)
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
 app.delete("/api/projects/leave", (req, res) => {
     const { projectId, studentId } = req.body;
     const sql = "DELETE FROM Team_Matching WHERE ProjectID = ? AND StudentID = ?";
     db.query(sql, [projectId, studentId], (err, result) => {
         if (err) return res.status(500).json({ error: "Delete failed" });
+<<<<<<< HEAD
         
         // 刪除後，若該 ProjectID 存在空組別（在 Team_Matching 中已無任何組員紀錄），將其徹底刪除以維持整潔
         const cleanSql = `
@@ -319,10 +386,14 @@ app.delete("/api/projects/leave", (req, res) => {
         db.query(cleanSql, [projectId, projectId], (err2) => {
             res.json({ message: "Project left and empty group cleaned up successfully." });
         });
+=======
+        res.json({ message: "Project left successfully." });
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
     });
 });
 
 // ==========================================
+<<<<<<< HEAD
 // ADMIN & PROFESSOR DIRECT MATCHING API (Force to Group)
 // ==========================================
 
@@ -334,11 +405,22 @@ app.post("/api/admin/projects/add-member", (req, res) => {
     }
     
     // 檢查原本是否在配對池中
+=======
+// ADMIN & PROFESSOR DIRECT MATCHING API
+// ==========================================
+
+// POST: 管理員或教授直接將學生加入特定專案 (直接設為 Matched 官方成員)
+app.post("/api/admin/projects/add-member", (req, res) => {
+    const { projectId, studentId } = req.body;
+    
+    // 1. 先檢查該學生是否已經在該專案的配對池中
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
     const checkSql = "SELECT * FROM Team_Matching WHERE ProjectID = ? AND StudentID = ?";
     db.query(checkSql, [projectId, studentId], (err, results) => {
         if (err) return res.status(500).json({ error: "Database error checking membership" });
         
         if (results.length > 0) {
+<<<<<<< HEAD
             // 如果原本存在其他組別/狀態，直接強制升級更新為該 Group 的 'Matched'
             const updateSql = "UPDATE Team_Matching SET GroupID = ?, Match_Status = 'Matched' WHERE ProjectID = ? AND StudentID = ?";
             db.query(updateSql, [groupId, projectId, studentId], (err2) => {
@@ -351,9 +433,27 @@ app.post("/api/admin/projects/add-member", (req, res) => {
             db.query(insertSql, [projectId, studentId, groupId], (err2) => {
                 if (err2) return res.status(500).json({ error: "Failed to direct-insert team member." });
                 res.json({ message: "Student added directly to group as official member." });
+=======
+            // 2. 如果原本處於 Pending 或其他狀態，直接強制升級更新為 'Matched'
+            const updateSql = "UPDATE Team_Matching SET Match_Status = 'Matched' WHERE ProjectID = ? AND StudentID = ?";
+            db.query(updateSql, [projectId, studentId], (err2) => {
+                if (err2) return res.status(500).json({ error: "Failed to upgrade candidate status." });
+                return res.json({ message: "Student status updated to Matched successfully." });
+            });
+        } else {
+            // 3. 如果原本完全不在專案內，直接插入一筆狀態為 'Matched' 的正式紀錄
+            const insertSql = "INSERT INTO Team_Matching (ProjectID, StudentID, Match_Status) VALUES (?, ?, 'Matched')";
+            db.query(insertSql, [projectId, studentId], (err2) => {
+                if (err2) return res.status(500).json({ error: "Failed to direct-insert team member." });
+                res.json({ message: "Student added directly to project as official member." });
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
             });
         }
     });
 });
 
+<<<<<<< HEAD
 app.listen(4000, () => console.log('Server is running on http://localhost:4000'));
+=======
+app.listen(3000, () => console.log('Server is running on http://localhost:3000'));
+>>>>>>> ff60376c5f0ad789f1ba38aade68e51ebc0319fd
