@@ -6,11 +6,14 @@ const app = express();
 app.use(cors());
 app.use(express.json()); 
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '',      
-    database: 'mbti_system'
+    database: 'mbti_system',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 // READ API: Get student list

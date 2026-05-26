@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: May 24, 2026 at 09:24 AM
+-- Generation Time: May 26, 2026 at 08:23 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -126,6 +126,20 @@ INSERT INTO `MBTI_Type` (`MBTI_Code`, `Title`, `Description`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `Notification`
+--
+
+CREATE TABLE `Notification` (
+  `NotificationID` int(11) NOT NULL,
+  `StudentID` varchar(20) NOT NULL,
+  `Message` varchar(255) NOT NULL,
+  `Is_Read` tinyint(1) DEFAULT 0,
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `Project`
 --
 
@@ -147,45 +161,6 @@ INSERT INTO `Project` (`ProjectID`, `Title`, `Description`, `Status`) VALUES
 (4, 'Blockchain Identity Ledger', 'Researching decentralized identity verification via Solidity.', 'Open'),
 (5, 'Cloud Pentesting Automator', 'Developing an automated AWS/Azure environment scanner.', 'Open'),
 (6, 'E-Commerce Microservices', 'Refactoring a monolithic web application into Docker microservices.', 'In Progress');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Project_Group`
---
-
-CREATE TABLE `Project_Group` (
-  `GroupID` int(11) NOT NULL AUTO_INCREMENT,
-  `ProjectID` int(11) NOT NULL,
-  `GroupName` varchar(100) NOT NULL,
-  PRIMARY KEY (`GroupID`),
-  KEY `ProjectID` (`ProjectID`),
-  CONSTRAINT `project_group_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `Project_Group`
---
-
-INSERT INTO `Project_Group` (`GroupID`, `ProjectID`, `GroupName`) VALUES
-(1, 1, 'Group A'),
-(2, 2, 'Group A'),
-(3, 3, 'Group A'),
-(4, 4, 'Group A'),
-(5, 5, 'Group A'),
-(6, 6, 'Group A'),
-(7, 1, 'Group B (ByteForce)'),
-(8, 1, 'Group C (DataPirates)'),
-(9, 2, 'Group B (PixelPerfect)'),
-(10, 2, 'Group C (CodeWizards)'),
-(11, 3, 'Group B (SecOps)'),
-(12, 3, 'Group C (NetGuard)'),
-(13, 4, 'Group B (EtherNodes)'),
-(14, 4, 'Group C (ChainReact)'),
-(15, 5, 'Group B (SentryOps)'),
-(16, 5, 'Group C (CloudShield)'),
-(17, 6, 'Group B (ShopSync)'),
-(18, 6, 'Group C (CartVanguard)');
 
 -- --------------------------------------------------------
 
@@ -212,6 +187,40 @@ INSERT INTO `Project_Department` (`ProjectID`, `DeptID`) VALUES
 (5, 3),
 (6, 2),
 (6, 4);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Project_Group`
+--
+
+CREATE TABLE `Project_Group` (
+  `GroupID` int(11) NOT NULL,
+  `ProjectID` int(11) NOT NULL,
+  `GroupName` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `Project_Group`
+--
+
+INSERT INTO `Project_Group` (`GroupID`, `ProjectID`, `GroupName`) VALUES
+(1, 1, 'Group A'),
+(2, 2, 'Group A'),
+(3, 3, 'Group A'),
+(4, 4, 'Group A'),
+(5, 5, 'Group A'),
+(6, 6, 'Group A'),
+(7, 1, 'Group B (ByteForce)'),
+(9, 2, 'Group B (PixelPerfect)'),
+(11, 3, 'Group B (SecOps)'),
+(12, 3, 'Group C (NetGuard)'),
+(13, 4, 'Group B (EtherNodes)'),
+(14, 4, 'Group C (ChainReact)'),
+(15, 5, 'Group B (SentryOps)'),
+(16, 5, 'Group C (CloudShield)'),
+(17, 6, 'Group B (ShopSync)'),
+(18, 6, 'Group C (CartVanguard)');
 
 -- --------------------------------------------------------
 
@@ -299,13 +308,7 @@ CREATE TABLE `Team_Matching` (
   `ProjectID` int(11) NOT NULL,
   `StudentID` varchar(20) NOT NULL,
   `GroupID` int(11) DEFAULT NULL,
-  `Match_Status` varchar(20) DEFAULT 'Pending',
-  PRIMARY KEY (`ProjectID`,`StudentID`),
-  KEY `StudentID` (`StudentID`),
-  KEY `GroupID` (`GroupID`),
-  CONSTRAINT `team_matching_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE,
-  CONSTRAINT `team_matching_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE,
-  CONSTRAINT `team_matching_ibfk_3` FOREIGN KEY (`GroupID`) REFERENCES `Project_Group` (`GroupID`) ON DELETE SET NULL
+  `Match_Status` varchar(20) DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -316,39 +319,20 @@ INSERT INTO `Team_Matching` (`ProjectID`, `StudentID`, `GroupID`, `Match_Status`
 (1, 'D1102031', 1, 'Matched'),
 (1, 'D1102115', 1, 'Pending'),
 (1, 'D1102144', 1, 'Pending'),
-(2, 'D1102045', 2, 'Matched'),
-(3, 'D1102089', 3, 'Matched'),
-(4, 'D1102144', 4, 'Pending'),
-(5, 'D1102277', 5, 'Matched'),
-(6, 'D1102159', 6, 'Pending'),
 (1, 'D1102450', 7, 'Matched'),
 (1, 'D1102500', 7, 'Matched'),
-(1, 'D1102560', 7, 'Pending'),
+(2, 'D1102045', 2, 'Matched'),
+(2, 'D1102462', 9, 'Pending'),
 (2, 'D1102488', 9, 'Matched'),
 (2, 'D1102599', 9, 'Matched'),
-(2, 'D1102462', 9, 'Pending'),
+(3, 'D1102089', 3, 'Matched'),
 (3, 'D1102512', 11, 'Matched'),
 (3, 'D1102580', 11, 'Matched'),
+(4, 'D1102144', 4, 'Pending'),
 (4, 'D1102530', 13, 'Matched'),
+(5, 'D1102277', 5, 'Matched'),
+(6, 'D1102159', 6, 'Pending'),
 (6, 'D1102545', 17, 'Matched');
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `Notification`
---
-
-CREATE TABLE `Notification` (
-  `NotificationID` int(11) NOT NULL AUTO_INCREMENT,
-  `StudentID` varchar(20) NOT NULL,
-  `Message` varchar(255) NOT NULL,
-  `Is_Read` tinyint(1) DEFAULT 0,
-  `Created_At` timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`NotificationID`),
-  KEY `StudentID` (`StudentID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 
 --
 -- Indexes for dumped tables
@@ -383,6 +367,13 @@ ALTER TABLE `MBTI_Type`
   ADD PRIMARY KEY (`MBTI_Code`);
 
 --
+-- Indexes for table `Notification`
+--
+ALTER TABLE `Notification`
+  ADD PRIMARY KEY (`NotificationID`),
+  ADD KEY `notification_ibfk_1` (`StudentID`);
+
+--
 -- Indexes for table `Project`
 --
 ALTER TABLE `Project`
@@ -394,6 +385,13 @@ ALTER TABLE `Project`
 ALTER TABLE `Project_Department`
   ADD PRIMARY KEY (`ProjectID`,`DeptID`),
   ADD KEY `DeptID` (`DeptID`);
+
+--
+-- Indexes for table `Project_Group`
+--
+ALTER TABLE `Project_Group`
+  ADD PRIMARY KEY (`GroupID`),
+  ADD KEY `ProjectID` (`ProjectID`);
 
 --
 -- Indexes for table `Project_MBTI`
@@ -412,6 +410,14 @@ ALTER TABLE `Student`
   ADD KEY `MBTI_Code` (`MBTI_Code`);
 
 --
+-- Indexes for table `Team_Matching`
+--
+ALTER TABLE `Team_Matching`
+  ADD PRIMARY KEY (`ProjectID`,`StudentID`),
+  ADD KEY `StudentID` (`StudentID`),
+  ADD KEY `GroupID` (`GroupID`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -422,10 +428,22 @@ ALTER TABLE `Course_Feedback`
   MODIFY `FeedbackID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- AUTO_INCREMENT for table `Notification`
+--
+ALTER TABLE `Notification`
+  MODIFY `NotificationID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `Project`
 --
 ALTER TABLE `Project`
   MODIFY `ProjectID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `Project_Group`
+--
+ALTER TABLE `Project_Group`
+  MODIFY `GroupID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Constraints for dumped tables
@@ -439,11 +457,23 @@ ALTER TABLE `Course_Feedback`
   ADD CONSTRAINT `course_feedback_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`);
 
 --
+-- Constraints for table `Notification`
+--
+ALTER TABLE `Notification`
+  ADD CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `Project_Department`
 --
 ALTER TABLE `Project_Department`
   ADD CONSTRAINT `project_department_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`),
   ADD CONSTRAINT `project_department_ibfk_2` FOREIGN KEY (`DeptID`) REFERENCES `Department` (`DeptID`);
+
+--
+-- Constraints for table `Project_Group`
+--
+ALTER TABLE `Project_Group`
+  ADD CONSTRAINT `project_group_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `Project_MBTI`
@@ -459,10 +489,13 @@ ALTER TABLE `Student`
   ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`DeptID`) REFERENCES `Department` (`DeptID`),
   ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`MBTI_Code`) REFERENCES `MBTI_Type` (`MBTI_Code`);
 
-
-ALTER TABLE `Notification`
-  ADD CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE;
-
+--
+-- Constraints for table `Team_Matching`
+--
+ALTER TABLE `Team_Matching`
+  ADD CONSTRAINT `team_matching_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `team_matching_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `team_matching_ibfk_3` FOREIGN KEY (`GroupID`) REFERENCES `Project_Group` (`GroupID`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
