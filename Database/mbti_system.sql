@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: May 19, 2026 at 05:23 AM
+-- Generation Time: May 24, 2026 at 09:24 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -21,7 +21,7 @@ SET time_zone = "+00:00";
 -- Database: `mbti_system`
 --
 
--- -------------------------------------------------------
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `Course`
@@ -62,7 +62,11 @@ CREATE TABLE `Course_Feedback` (
 
 INSERT INTO `Course_Feedback` (`FeedbackID`, `CourseID`, `StudentID`, `Rating`, `Comments`) VALUES
 (1, 101, 'D1102031', 5, 'Great for beginners!'),
-(2, 102, 'D1102045', 4, 'Very practical.');
+(2, 102, 'D1102045', 4, 'Very practical.'),
+(3, 101, 'D1102115', 4, 'Enjoyed the assignments, python basics were clear.'),
+(4, 103, 'D1102089', 5, 'Vulnerability scanning tools were super cool to learn!'),
+(5, 104, 'D1102144', 3, 'Binary trees were a bit tough to wrap my head around.'),
+(6, 102, 'D1102159', 5, 'Tailwind CSS config section was incredibly helpful.');
 
 -- --------------------------------------------------------
 
@@ -139,7 +143,49 @@ CREATE TABLE `Project` (
 INSERT INTO `Project` (`ProjectID`, `Title`, `Description`, `Status`) VALUES
 (1, 'AI Chatbot Development', 'Developing a Python-based chatbot.', 'Open'),
 (2, 'Web Portfolio System', 'A collaborative React project.', 'In Progress'),
-(3, 'Cybersecurity Audit', 'Analyzing local network vulnerabilities.', 'Open');
+(3, 'Cybersecurity Audit', 'Analyzing local network vulnerabilities.', 'Open'),
+(4, 'Blockchain Identity Ledger', 'Researching decentralized identity verification via Solidity.', 'Open'),
+(5, 'Cloud Pentesting Automator', 'Developing an automated AWS/Azure environment scanner.', 'Open'),
+(6, 'E-Commerce Microservices', 'Refactoring a monolithic web application into Docker microservices.', 'In Progress');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Project_Group`
+--
+
+CREATE TABLE `Project_Group` (
+  `GroupID` int(11) NOT NULL AUTO_INCREMENT,
+  `ProjectID` int(11) NOT NULL,
+  `GroupName` varchar(100) NOT NULL,
+  PRIMARY KEY (`GroupID`),
+  KEY `ProjectID` (`ProjectID`),
+  CONSTRAINT `project_group_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `Project_Group`
+--
+
+INSERT INTO `Project_Group` (`GroupID`, `ProjectID`, `GroupName`) VALUES
+(1, 1, 'Group A'),
+(2, 2, 'Group A'),
+(3, 3, 'Group A'),
+(4, 4, 'Group A'),
+(5, 5, 'Group A'),
+(6, 6, 'Group A'),
+(7, 1, 'Group B (ByteForce)'),
+(8, 1, 'Group C (DataPirates)'),
+(9, 2, 'Group B (PixelPerfect)'),
+(10, 2, 'Group C (CodeWizards)'),
+(11, 3, 'Group B (SecOps)'),
+(12, 3, 'Group C (NetGuard)'),
+(13, 4, 'Group B (EtherNodes)'),
+(14, 4, 'Group C (ChainReact)'),
+(15, 5, 'Group B (SentryOps)'),
+(16, 5, 'Group C (CloudShield)'),
+(17, 6, 'Group B (ShopSync)'),
+(18, 6, 'Group C (CartVanguard)');
 
 -- --------------------------------------------------------
 
@@ -160,7 +206,12 @@ INSERT INTO `Project_Department` (`ProjectID`, `DeptID`) VALUES
 (1, 1),
 (1, 2),
 (2, 2),
-(3, 3);
+(3, 3),
+(4, 1),
+(4, 4),
+(5, 3),
+(6, 2),
+(6, 4);
 
 -- --------------------------------------------------------
 
@@ -181,7 +232,13 @@ INSERT INTO `Project_MBTI` (`ProjectID`, `MBTI_Code`) VALUES
 (1, 'INTJ'),
 (1, 'INTP'),
 (2, 'ENFP'),
-(2, 'INFJ');
+(2, 'INFJ'),
+(4, 'INTJ'),
+(4, 'INTP'),
+(5, 'ENTP'),
+(5, 'ISTP'),
+(6, 'ESTJ'),
+(6, 'INFJ');
 
 -- --------------------------------------------------------
 
@@ -196,6 +253,7 @@ CREATE TABLE `Student` (
   `MBTI_Code` char(4) NOT NULL,
   `EnrollmentYear` int(11) DEFAULT NULL,
   `Email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL DEFAULT 'password123',
   `Is_Searchable` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -203,13 +261,33 @@ CREATE TABLE `Student` (
 -- Dumping data for table `Student`
 --
 
-INSERT INTO `Student` (`StudentID`, `Name`, `DeptID`, `MBTI_Code`, `EnrollmentYear`, `Email`, `Is_Searchable`) VALUES
-('D1102031', 'Liam Smith', 1, 'INTJ', 2024, 'liam@example.com', 1),
-('D1102045', 'Sophia Chen', 2, 'ENFP', 2024, 'sophia@example.com', 1),
-('D1102089', 'Ethan Hunt', 3, 'ISTP', 2023, 'ethan@example.com', 0),
-('D1102102', 'Olivia Wang', 4, 'INFJ', 2025, 'olivia@example.com', 1),
-('D1102115', 'Lucas Garcia', 1, 'ENTP', 2024, 'lucas@example.com', 1),
-('D1102120', 'Emma Watson', 2, 'ISFJ', 2024, 'emma@example.com', 1);
+INSERT INTO `Student` (`StudentID`, `Name`, `DeptID`, `MBTI_Code`, `EnrollmentYear`, `Email`, `password`, `Is_Searchable`) VALUES
+('D1102031', 'Liam Smith', 1, 'INTJ', 2024, 'liam@example.com', 'password123', 1),
+('D1102045', 'Sophia Chen', 2, 'ENFP', 2024, 'sophia@example.com', 'password123', 1),
+('D1102089', 'Ethan Hunt', 3, 'ISTP', 2023, 'ethan@example.com', 'password123', 0),
+('D1102102', 'Olivia Wang', 4, 'INFJ', 2025, 'olivia@example.com', 'password123', 1),
+('D1102115', 'Lucas Garcia', 1, 'ENTP', 2024, 'lucas@example.com', 'password123', 1),
+('D1102120', 'Emma Watson', 2, 'ISFJ', 2024, 'emma@example.com', 'password123', 1),
+('D1102144', 'Alexander Wright', 1, 'INTP', 2024, 'alex@example.com', 'password123', 1),
+('D1102159', 'Chloe Isabella', 2, 'ENFJ', 2024, 'chloe@example.com', 'password123', 1),
+('D1102188', 'Daniel Craig', 3, 'ENTJ', 2023, 'daniel@example.com', 'password123', 1),
+('D1102201', 'Grace Hopper', 4, 'INTJ', 2025, 'grace@example.com', 'password123', 1),
+('D1102234', 'Benjamin Franklin', 1, 'ISTJ', 2024, 'ben@example.com', 'password123', 1),
+('D1102255', 'Mia Wallace', 2, 'ESFP', 2024, 'mia@example.com', 'password123', 0),
+('D1102277', 'Oliver Queen', 3, 'ISTP', 2023, 'oliver@example.com', 'password123', 1),
+('D1102311', 'Emma Stone', 4, 'INFP', 2025, 'emmas@example.com', 'password123', 1),
+('D1102345', 'Bruce Wayne', 3, 'INTJ', 2023, 'bruce@example.com', 'password123', 1),
+('D1102400', 'Diana Prince', 4, 'INFJ', 2025, 'diana@example.com', 'password123', 1),
+('D1102450', 'Tony Stark', 1, 'ENTP', 2024, 'tony@example.com', 'password123', 1),
+('D1102462', 'Peter Parker', 4, 'INFP', 2025, 'peter@example.com', 'password123', 1),
+('D1102488', 'Clark Kent', 2, 'INFJ', 2024, 'clark@example.com', 'password123', 1),
+('D1102500', 'Barry Allen', 1, 'ESTP', 2024, 'barry@example.com', 'password123', 1),
+('D1102512', 'Natasha Romanoff', 3, 'ISTP', 2023, 'natasha@example.com', 'password123', 1),
+('D1102530', 'Steve Rogers', 4, 'ISFJ', 2025, 'steve@example.com', 'password123', 1),
+('D1102545', 'Wanda Maximoff', 2, 'INFP', 2024, 'wanda@example.com', 'password123', 0),
+('D1102560', 'Stephen Strange', 1, 'INTJ', 2024, 'strange@example.com', 'password123', 1),
+('D1102580', 'Carol Danvers', 3, 'ESTJ', 2023, 'carol@example.com', 'password123', 1),
+('D1102599', 'Thor Odinson', 2, 'ESTP', 2024, 'thor@example.com', 'password123', 1);
 
 -- --------------------------------------------------------
 
@@ -220,17 +298,57 @@ INSERT INTO `Student` (`StudentID`, `Name`, `DeptID`, `MBTI_Code`, `EnrollmentYe
 CREATE TABLE `Team_Matching` (
   `ProjectID` int(11) NOT NULL,
   `StudentID` varchar(20) NOT NULL,
-  `Match_Status` varchar(20) DEFAULT 'Pending'
+  `GroupID` int(11) DEFAULT NULL,
+  `Match_Status` varchar(20) DEFAULT 'Pending',
+  PRIMARY KEY (`ProjectID`,`StudentID`),
+  KEY `StudentID` (`StudentID`),
+  KEY `GroupID` (`GroupID`),
+  CONSTRAINT `team_matching_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE,
+  CONSTRAINT `team_matching_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE,
+  CONSTRAINT `team_matching_ibfk_3` FOREIGN KEY (`GroupID`) REFERENCES `Project_Group` (`GroupID`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `Team_Matching`
 --
 
-INSERT INTO `Team_Matching` (`ProjectID`, `StudentID`, `Match_Status`) VALUES
-(1, 'D1102031', 'Matched'),
-(1, 'D1102115', 'Pending'),
-(2, 'D1102045', 'Matched');
+INSERT INTO `Team_Matching` (`ProjectID`, `StudentID`, `GroupID`, `Match_Status`) VALUES
+(1, 'D1102031', 1, 'Matched'),
+(1, 'D1102115', 1, 'Pending'),
+(1, 'D1102144', 1, 'Pending'),
+(2, 'D1102045', 2, 'Matched'),
+(3, 'D1102089', 3, 'Matched'),
+(4, 'D1102144', 4, 'Pending'),
+(5, 'D1102277', 5, 'Matched'),
+(6, 'D1102159', 6, 'Pending'),
+(1, 'D1102450', 7, 'Matched'),
+(1, 'D1102500', 7, 'Matched'),
+(1, 'D1102560', 7, 'Pending'),
+(2, 'D1102488', 9, 'Matched'),
+(2, 'D1102599', 9, 'Matched'),
+(2, 'D1102462', 9, 'Pending'),
+(3, 'D1102512', 11, 'Matched'),
+(3, 'D1102580', 11, 'Matched'),
+(4, 'D1102530', 13, 'Matched'),
+(6, 'D1102545', 17, 'Matched');
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Notification`
+--
+
+CREATE TABLE `Notification` (
+  `NotificationID` int(11) NOT NULL AUTO_INCREMENT,
+  `StudentID` varchar(20) NOT NULL,
+  `Message` varchar(255) NOT NULL,
+  `Is_Read` tinyint(1) DEFAULT 0,
+  `Created_At` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`NotificationID`),
+  KEY `StudentID` (`StudentID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Indexes for dumped tables
@@ -294,13 +412,6 @@ ALTER TABLE `Student`
   ADD KEY `MBTI_Code` (`MBTI_Code`);
 
 --
--- Indexes for table `Team_Matching`
---
-ALTER TABLE `Team_Matching`
-  ADD PRIMARY KEY (`ProjectID`,`StudentID`),
-  ADD KEY `StudentID` (`StudentID`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -308,13 +419,13 @@ ALTER TABLE `Team_Matching`
 -- AUTO_INCREMENT for table `Course_Feedback`
 --
 ALTER TABLE `Course_Feedback`
-  MODIFY `FeedbackID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `FeedbackID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `Project`
 --
 ALTER TABLE `Project`
-  MODIFY `ProjectID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `ProjectID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -348,12 +459,10 @@ ALTER TABLE `Student`
   ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`DeptID`) REFERENCES `Department` (`DeptID`),
   ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`MBTI_Code`) REFERENCES `MBTI_Type` (`MBTI_Code`);
 
---
--- Constraints for table `Team_Matching`
---
-ALTER TABLE `Team_Matching`
-  ADD CONSTRAINT `team_matching_ibfk_1` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`),
-  ADD CONSTRAINT `team_matching_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`);
+
+ALTER TABLE `Notification`
+  ADD CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`StudentID`) REFERENCES `Student` (`StudentID`) ON DELETE CASCADE;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
